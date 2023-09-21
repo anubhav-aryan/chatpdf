@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from '@clerk/nextjs'
  
 export const metadata = {
-  title: 'Next.js 13 with Clerk',
+  title: 'Chatpdf',
 }
  
 export default function RootLayout({
