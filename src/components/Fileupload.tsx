@@ -5,6 +5,7 @@ import { Inbox } from "lucide-react";
 import { uploadToS3 } from "@/lib/s3";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const Fileupload = () => {
   const {} = useMutation ({
@@ -30,17 +31,28 @@ const Fileupload = () => {
       console.log(acceptedFiles);
       const file = acceptedFiles[0];
       if (file.size > 10 * 1024 * 1024) {
-        alert("File size should be less than 10MB");
+        toast.error("File too large");
         return;
       }
       try {
         const data = await uploadToS3(file);
-        console.log("data", data);
-      } catch (error) {
-        console.log(error);
-      }
-    },
-  });
+        if (!data?.file_key || !data?.file_name) {
+          toast.error("Something went wrong");
+          return;
+        }
+        mutate(data, {
+          onSuccess: (data) => {
+            console.log(data);
+        },
+        onError: (err) => {
+          console.log(err);
+        }
+      })
+    } catch (error) {
+      console.log(error);
+    }
+  })
+      
 
   return (
     <div className="p-2 bg-white rounded-xl">
