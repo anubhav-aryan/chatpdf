@@ -6,9 +6,16 @@ import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { uploadToS3 } from "@/lib/s3";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { ReactQueryDevtools } from "react-query/devtools";
+import { useQuery } from "@tanstack/react-query";
+
+
+
 
 const Fileupload = () => {
   const [uploading, setUploading] = React.useState(false);
+  const queryClient = new QueryClient();
   const { mutate, isLoading } = useMutation({
     mutationFn: async ({
       file_key,
@@ -59,6 +66,7 @@ const Fileupload = () => {
   });
 
   return (
+    <QueryClientProvider client={queryClient}>
     <div className="p-2 bg-white rounded-xl">
       <div
         {...getRootProps({
@@ -83,6 +91,7 @@ const Fileupload = () => {
         )}
       </div>
     </div>
+    </QueryClientProvider>
   );
 };
 
