@@ -36,3 +36,4 @@ s3.upload(params, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
         console.log('File uploaded successfully. Location:', data.Location);
     }
 });
+
