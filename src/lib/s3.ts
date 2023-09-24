@@ -1,48 +1,38 @@
-import AWS from "aws-sdk";
-import { parse } from "path";
+import AWS from 'aws-sdk';
+import fs from 'fs';
 
-export async function uploadToS3(file: File) {
-  try {
-    AWS.config.update({
-      accessKeyId: process.env.NEXT_PUBLIC_S3_SECRET_ACCESS_KEY,
-      secretAccessKey: process.env.NEXT_PUBLIC_S3_ACCESS_KEY_ID,
-    });
-    const s3 = new AWS.S3({
-      params: {
-        Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME,
-      },
-      region: "ap-south-1",
-    });
+// Set the region and credentials for AWS SDK
+AWS.config.update({
+    region: 'ap-south-1',
+    accessKeyId: 'AKIA2NPHSNPINB3UOOFE',
+    secretAccessKey: '6+OlsfrPk6bFzbtyeZ/biu476wyRO9v2OlUAM9fe'
+});
 
-    const file_key =
-      "uploads/" + Date.now().toString() + file.name.replace(" ", "_");
+// Create an S3 service object
+const s3 = new AWS.S3();
 
-    const params = {
-      Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME!,
-      Key: file_key,
-      Body: file,
-      
-    };
+// Define the bucket name and file name
+const bucketName = 'anubhavchatpdf';
+const fileName = 'hello.txt';
 
-    const upload = s3.putObject(params).on("httpUploadProgress", (evt) => {
-      console.log(
-        "uploading to s3...",
-        parseInt(((evt.loaded * 100) / evt.total).toString()) + "%"
-      );
-    }).promise()
+// Define the text to be uploaded
+const text = 'Hello world';
 
-    await upload.then(data => {
-      console.log('successfully uploaded to s3', file_key)
-    })
+// Create a buffer from the text
+const buffer = Buffer.from(text, 'utf-8');
 
-    return Promise.resolve ({
-        file_key,
-        file_name: file.name,
-    });
+// Set the parameters for the S3 upload
+const params = {
+    Bucket: bucketName,
+    Key: fileName,
+    Body: buffer
+};
 
-  } catch (error) {}
-}
-
-export function getS3Url(file_key: string) {
-  return `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME}.s3.ap-south-1.amazonaws.com/${file_key}`;
-}
+// Upload the file to S3
+s3.upload(params, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
+    if (err) {
+        console.log('Error uploading file:', err);
+    } else {
+        console.log('File uploaded successfully. Location:', data.Location);
+    }
+});
