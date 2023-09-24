@@ -1,39 +1,42 @@
-import AWS from 'aws-sdk';
-import fs from 'fs';
+import { PutObjectCommandOutput, S3 } from "@aws-sdk/client-s3";
 
-// Set the region and credentials for AWS SDK
-AWS.config.update({
-    region: 'ap-south-1',
-    accessKeyId: 'AKIA2NPHSNPINB3UOOFE',
-    secretAccessKey: '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'
-});
+export async function uploadToS3(
+  file: File
+): Promise<{ file_key: string; file_name: string }> {
+  return new Promise((resolve, reject) => {
+    try {
+      const s3 = new S3({
+        region: "ap-south-1",
+        credentials: {
+          accessKeyId: process.env.NEXT_PUBLIC_S3_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.NEXT_PUBLIC_S3_SECRET_ACCESS_KEY!,
+        },
+      });
 
-// Create an S3 service object
-const s3 = new AWS.S3();
+      const file_key =
+        "uploads/" + Date.now().toString() + file.name.replace(" ", "-");
 
-// Define the bucket name and file name
-const bucketName = 'anubhavchatpdf';
-const fileName = 'hello.txt';
-
-// Define the text to be uploaded
-const text = 'Hello world';
-
-// Create a buffer from the text
-const buffer = Buffer.from(text, 'utf-8');
-
-// Set the parameters for the S3 upload
-const params = {
-    Bucket: bucketName,
-    Key: fileName,
-    Body: buffer
-};
-
-// Upload the file to S3
-s3.upload(params, function(err: Error, data: AWS.S3.ManagedUpload.SendData) {
-    if (err) {
-        console.log('Error uploading file:', err);
-    } else {
-        console.log('File uploaded successfully. Location:', data.Location);
+      const params = {
+        Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME!,
+        Key: file_key,
+        Body: file,
+      };
+      s3.putObject(
+        params,
+        (err: any, data: PutObjectCommandOutput | undefined) => {
+          return resolve({
+            file_key,
+            file_name: file.name,
+          });
+        }
+      );
+    } catch (error) {
+      reject(error);
     }
-});
+  });
+}
 
+export function getS3Url(file_key: string) {
+  const url = `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME}.s3.ap-south-1.amazonaws.com/${file_key}`;
+  return url;
+}

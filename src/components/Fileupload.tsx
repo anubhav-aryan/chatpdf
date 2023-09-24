@@ -1,15 +1,22 @@
 "use client";
+import { useMutation } from "@tanstack/react-query";
+import { Inbox, Loader2 } from "lucide-react";
 import React from "react";
 import { useDropzone } from "react-dropzone";
-import { Inbox, Loader2 } from "lucide-react";
-import { uploadToS3 } from "@/lib/s3";
-import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
+import { uploadToS3 } from "@/lib/s3";
 
 const Fileupload = () => {
-  const { mutate } = useMutation({
-    mutationFn: async ({ file_key, file_name }: { file_key: string; file_name: string }) => {
+  const [uploading, setUploading] = React.useState(false);
+  const { mutate, isLoading } = useMutation({
+    mutationFn: async ({
+      file_key,
+      file_name,
+    }: {
+      file_key: string;
+      file_name: string;
+    }) => {
       const response = await axios.post("/api/create-chat", {
         file_key,
         file_name,
@@ -29,6 +36,7 @@ const Fileupload = () => {
         return;
       }
       try {
+        setUploading(true);
         const data = await uploadToS3(file);
         if (!data?.file_key || !data?.file_name) {
           toast.error("Something went wrong");
@@ -36,14 +44,16 @@ const Fileupload = () => {
         }
         mutate(data, {
           onSuccess: (data) => {
-            console.log(data);
+            toast.success(data.message);
           },
           onError: (err) => {
-            toast.error("Error creating")
+            toast.error("Error creating");
           },
         });
       } catch (error) {
         console.log(error);
+      } finally {
+        setUploading(false);
       }
     },
   });

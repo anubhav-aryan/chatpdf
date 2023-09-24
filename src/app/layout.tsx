@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import Provider from "@/components/ui/Provider";
+import Providers from "@/components/Provider";
 import { Toaster } from "react-hot-toast";
 
 export const metadata = {
@@ -15,12 +15,12 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <Provider>
+      
         <html lang="en">
           <body>{children}</body>
           <Toaster />
         </html>
-      </Provider>
+      
     </ClerkProvider>
   );
 }
